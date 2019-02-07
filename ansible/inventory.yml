@@ -1,0 +1,25 @@
+---
+all:
+  vars:
+    kube_network: weave
+    kube_install_helm: true
+    external_ips: [<ip of your https accessible node>]
+    ansible_user: enol
+    nsupdate_host: <host name.fedcloud-tf.fedcloud.eu>
+    nsupdate_passwd: <host password> 
+    nsupdate_ip: <ip of your https accessible node>
+    front_ip: <ip of master> 
+    jupyter_crypt_key: "<some rand key>"
+    proxy_token: "<another rand key>"
+    monitor_token: "<one more>"
+    checkin_client_id: "<your client id>"
+    checkin_client_secret: "<your client secret>"
+    email: "<email to use in let's encrypt>"
+  children:
+    wn:
+      hosts:
+        <ip of host 1>:
+        <ip of host 2>:
+    front:
+      hosts:
+        <ip of master>:

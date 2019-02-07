@@ -1,0 +1,1 @@
+/exports {% for host in groups['all'] -%}{{ hostvars[host]['ansible_default_ipv4']['address']}}(rw,root_squash,no_subtree_check) {% endfor -%}
