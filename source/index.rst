@@ -13,7 +13,7 @@ point you realize that you need a mix of these all – that’s what “notebook
 platforms are, with Jupyter being the most popular notebook software out there.
 
 Notebooks is an 'as a Service' environment based on the `Jupyter technology
-<http://jupyter.org/>`_ , offering a browser-based, scalable tool for
+<http://jupyter.org/>`_, offering a browser-based, scalable tool for
 interactive data analysis. The Notebooks environment provides users with
 notebooks where they can combine text, mathematics, computations and rich media
 output. EGI Notebooks is a multi-user service and can scale to multiple servers
