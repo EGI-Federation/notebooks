@@ -10,7 +10,7 @@ scale to multiple servers and users with the
 This repository contains the basic documentation on the EGI Notebooks service
 and serves as main entry point for collecting issues and requirements.
 
-## Got questions/issues/requirements?
+## Questions/issues/requirements
 
 + [Open an issue](https://github.com/EGI-Foundation/notebooks/issues/new) in
   this project. This is a safe, respectful space to ask questions and open
@@ -25,3 +25,4 @@ We keep track of training events related to this service in the
 Training material for these events is also linked below:
 
 + [DI4R 2018](https://github.com/EGI-Foundation/notebooks-training-di4r2018)
++ [ISGC 2019](https://documents.egi.eu/document/3442)
