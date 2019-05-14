@@ -27,6 +27,7 @@ or any additional service requests.
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
    :caption: Contents:
 
    service

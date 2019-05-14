@@ -24,7 +24,7 @@ functionality:
 * VO-Specific storage/Big data facilities or any pluggable tools into the
   notebooks environment can be added to community specific instances.
 
-.. image:: images/egi_notebooks_architecture.png
+.. image:: /_static/egi_notebooks_architecture.png
 
 .. [[File:EGI_Notebooks_Stack.png|center|650px|EGI Notebooks Achitecture]]
 
@@ -70,3 +70,114 @@ on commodity virtual machines.
 
    * Provide a way to parametrise and execute notebooks like https://github.com/nteract/papermill
 
+EGI Customisations
+::::::::::::::::::
+
+EGI Notebooks is deployed as a set of customisations of the `JupyterHub helm
+charts <https://jupyterhub.github.io/helm-chart/>`_.
+
+
+Authentication
+==============
+
+EGI Check-in can be easily configured as a OAuth2.0 provider for `JupyterHub's
+oauthenticator <https://github.com/jupyterhub/oauthenticator>`_. See below a
+sample configuration for the helm chart using Check-in production environment:
+
+.. code-block:: yaml
+
+   hub:
+     extraEnv:
+       OAUTH2_AUTHORIZE_URL: https://aai.egi.eu/oidc/authorize
+       OAUTH2_TOKEN_URL: https://aai.egi.eu/oidc/token
+       OAUTH_CALLBACK_URL: https://<your host>/hub/oauth_callback
+
+   auth:
+     type: custom
+     custom:
+       className: oauthenticator.generic.GenericOAuthenticator
+       config:
+         login_service: "EGI Check-in"
+         client_id: "<your client id>"
+         client_secret: "<your client secret>"
+         oauth_callback_url: "https://<your host>/hub/oauth_callback"
+         username_key: "sub"
+         token_url: "https://aai.egi.eu/oidc/token"
+         userdata_url: "https://aai.egi.eu/oidc/userinfo"
+         scope: ["openid", "profile", "email", "eduperson_scoped_affiliation", "eduperson_entitlement"]
+
+
+To simplify the configuration and to add refresh capabilities to the
+credentials, we have created a new `EGI Check-in authenticator <https://github.com/enolfc/oauthenticator>`_
+that can be configued as follows:
+
+.. code-block:: yaml
+
+   auth:
+     state:
+       enabled: true
+       cryptoKey: <some unique crypto key>
+     type: custom
+     custom:
+       className: oauthenticator.egicheckin.EGICheckinAuthenticator
+       config:
+         client_id: "<your client id>"
+         client_secret: "<your client secret>"
+         oauth_callback_url: "https://<your host>/hub/oauth_callback"
+         scope: ["openid", "profile", "email", "offline_access", "eduperson_scoped_affiliation", "eduperson_entitlement"]
+
+
+The ``auth.state`` configuration allows to store refresh tokens for the users
+that will allow to get up-to-date valid credentials as needed.
+
+Accounting
+==========
+
+.. warning::
+
+   documentation is not yet final!
+
+
+`Accounting module <https://github.com/EGI-Foundation/egi-notebooks-accounting>`_
+generates VM-like accounting records for each of the notebooks started at the
+service. It's available as a `helm chart <https://egi-foundation.github.io/egi-notebooks-chart/>_`
+that can be deployed in the same namespace as the JupyterHub chart. The only
+needed configuration for the chart is an IGTF-recognised certificate for the
+host registered in GOCDB as accounting.
+
+
+.. code-block:: yaml
+
+   ssm:
+     hostcert: |-
+       <hostcert>
+     hostkey: |-
+       <hostkey>
+
+
+Monitoring
+==========
+
+`Monitoring <https://github.com/EGI-Foundation/egi-notebooks-monitoring>`_ is
+performed by trying to execute a user notebook every hour. This is accomplished
+by registering a new service in the hub that has admin permissions. Monitoring
+is then deployed as a `helm chart <https://egi-foundation.github.io/egi-notebooks-chart/>_`
+that must be deployed in the same namespace as the JupyterHub chart.
+Configuration of JupyterHub must include this section:
+
+.. code-block:: yaml
+
+   hub:
+     services:
+       status:
+          url: "http://status-web/"
+          admin: true
+          apiToken: "<a unique API token>"
+
+
+Likewise the monitoring chart is configured as follows:
+
+.. code-block:: yaml
+
+  service:
+    api_token: "<same API token as above>"
