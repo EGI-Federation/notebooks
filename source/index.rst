@@ -32,6 +32,8 @@ or any additional service requests.
    service
    data
    integration
-   customisation
    communities
    technical
+
+.. to be added back
+   customisation

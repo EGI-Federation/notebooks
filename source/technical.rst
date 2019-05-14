@@ -24,6 +24,8 @@ functionality:
 * VO-Specific storage/Big data facilities or any pluggable tools into the
   notebooks environment can be added to community specific instances.
 
+.. image:: images/egi_notebooks_architecture.png
+
 .. [[File:EGI_Notebooks_Stack.png|center|650px|EGI Notebooks Achitecture]]
 
 Kubernetes
@@ -63,8 +65,8 @@ and accounting EGI services.
 There are no specific hardware requirements and the whole environment can run
 on commodity virtual machines.
 
-Ideas for future development
-::::::::::::::::::::::::::::
+.. Ideas for future development
+   ::::::::::::::::::::::::::::
 
-* Provide a way to parametrise and execute notebooks like https://github.com/nteract/papermill
+   * Provide a way to parametrise and execute notebooks like https://github.com/nteract/papermill
 

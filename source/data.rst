@@ -8,7 +8,7 @@ happen if there is no activity for more than 1 hour!)**. There is no space
 limit set for other folders.
 
 If you need to increase your persistent storage space,
-open a [https://ggus.eu GGUS ticket to the Notebooks Support Unit]
+open a `GGUS ticket to the Notebooks Support Unit <https://ggus.eu>`_
 
 Access to other kinds of persistent storage for community specific instances
 that can be tailored to your specific needs and available storage systems.
