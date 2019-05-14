@@ -1,8 +1,8 @@
 Data Management
 ---------------
 
-1GB persistent storage for the notebooks is available at ``/persistent`` linked
-from the notebooks home directory. **Please note that files stored on any
+10GB persistent storage for the notebooks is available as your home
+directory. **Please note that files stored on any
 other folder will be lost when your notebook server is closed (which can
 happen if there is no activity for more than 1 hour!)**. There is no space
 limit set for other folders.
