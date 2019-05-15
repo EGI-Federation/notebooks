@@ -181,3 +181,122 @@ Likewise the monitoring chart is configured as follows:
 
   service:
     api_token: "<same API token as above>"
+
+Docker images
+=============
+
+Our service relies on custom images for the hub and the single-user notebooks.
+Dockerfiles are available at `EGI Notebooks images <https://github.com/EGI-foundation/egi-notebooks-images>`_
+git repository and automatically build for every commit pushed to the repo to
+`eginotebooks @ dockerhub <https://hub.docker.com/u/eginotebooks>`_.
+
+Hub image
+^^^^^^^^^
+
+Builds from the `JupyterHub k8s-hub image <https://hub.docker.com/r/jupyterhub/k8s-hub>`_
+and adds:
+
+* EGI and D4Science authenticators
+* EGISpawner
+* EGI look and feel for the login page
+
+Single-user image
+^^^^^^^^^^^^^^^^^
+
+Builds from `Jupyter datasicence-notebook <https://hub.docker.com/r/jupyter/datascience-notebook>`_
+and adds a wide range of libraries as requested by users of the services. We
+are currently looking into alternatives for better managing this image with
+CVMFS as a possible solution.
+
+Sample helm configuration
+=========================
+
+If you want to build your own EGI Notebooks instance, you can start from the
+following sample configuration and adapt to your needs by setting:
+
+* secret tokens (for ``proxy.secretToken``, ``hub.services.status.api_token``,
+  ``auth.state.cryptoKey``). They can be generated with
+  ``openssl rand -hex 32``.
+
+* A valid host name (``<your notebooks host>`` below) that resolves to your
+  Kubernetes Ingress
+
+* Valid EGI Check-in client credentials, these can be obtained by creating a
+  new client at `EGI AAI OpenID Connect Provider
+  <https://aai-dev.egi.eu/oidc/>`_. When moving to EGI Check-in production
+  environment, make sure to remove the ``hub.extraEnv.EGICHECKIN_HOST``
+  variable.
+
+.. code-block:: yaml
+
+   ---
+   proxy:
+     secretToken: "<some secret>"
+     service:
+       type: NodePort
+
+   ingress:
+     enabled: true
+     annotations:
+       kubernetes.io/tls-acme: "true"
+     hosts: [<your notebooks host>]
+     tls:
+     - hosts:
+       - <your notebooks host>
+       secretName: acme-tls-notebooks
+       enabled: true
+       hosts: [<your notebooks host>]
+
+   singleuser:
+     storage:
+       capacity: 1Gi
+       dynamic:
+         pvcNameTemplate: claim-{userid}{servername}
+         volumeNameTemplate: vol-{userid}{servername}
+         storageAccessModes: ["ReadWriteMany"]
+     memory:
+       limit: 1G
+       guarantee: 512M
+     cpu:
+       limit: 2
+       guarantee: .02
+     defaultUrl: "/lab"
+     image:
+       name: eginotebooks/single-user
+       tag: c1b2a2a
+
+   hub:
+     image:
+       name: eginotebooks/hub
+       tag: c1b2a2a
+     extraConfig:
+       enable-lab: |-
+         c.KubeSpawner.cmd = ['jupyter-labhub']
+       volume-handling: |-
+         from egispawner.spawner import EGISpawner
+         c.JupyterHub.spawner_class = EGISpawner
+     extraEnv:
+       JUPYTER_ENABLE_LAB: 1
+       EGICHECKIN_HOST: aai-dev.egi.eu
+     services:
+       status:
+          url: "http://status-web/"
+          admin: true
+          api_token: "<monitor token>"
+
+   auth:
+     type: custom
+     state:
+       enabled: true
+       cryptoKey: "<a unique crypto key>"
+     admin:
+       access: true
+       users: [<list of EGI Check-in users with admin powers>]
+     custom:
+       className: oauthenticator.egicheckin.EGICheckinAuthenticator
+       config:
+         client_id: "<your egi checkin_client_id>"
+         client_secret: "<your egi checkin_client_secret>"
+         oauth_callback_url: "https://<your notebooks host>/hub/oauth_callback"
+         enable_auth_state: true
+         scope: ["openid", "profile", "email", "offline_access", "eduperson_scoped_affiliation", "eduperson_entitlement"]
