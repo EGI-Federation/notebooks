@@ -35,6 +35,7 @@ or any additional service requests.
    integration
    communities
    technical
+   faq
 
 .. to be added back
    customisation
