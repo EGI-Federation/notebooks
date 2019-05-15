@@ -8,7 +8,7 @@ You can install new software easily on the notebooks using ``conda`` or
 ``pip``. The ``%conda`` and ``%pip`` `magics <https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-conda>`_
 can be used in a cell of your notebooks to do so, e.g. installing ``rdkit``:
 
-.. code-block::
+.. code-block:: pycon
 
    %conda install rdkit
 
