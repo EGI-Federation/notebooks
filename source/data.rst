@@ -1,11 +1,10 @@
 Data Management
 ---------------
 
-10GB persistent storage for the notebooks is available as your home
+1GB persistent storage for the notebooks is available as your home
 directory. **Please note that files stored on any
 other folder will be lost when your notebook server is closed (which can
-happen if there is no activity for more than 1 hour!)**. There is no space
-limit set for other folders.
+happen if there is no activity for more than 1 hour!)**.
 
 If you need to increase your persistent storage space,
 open a `GGUS ticket to the Notebooks Support Unit <https://ggus.eu>`_

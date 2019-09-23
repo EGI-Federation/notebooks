@@ -35,6 +35,7 @@ or any additional service requests.
    integration
    communities
    technical
+   training
    faq
 
 .. to be added back
