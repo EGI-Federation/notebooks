@@ -341,6 +341,8 @@ Just edit the deployment description file and run ansible again. The helm will
 be upgraded at the cluster.
 
 .. TODO:
+   prometheus
+   grafana
    accounting
    backups
    capacity management 
