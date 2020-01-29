@@ -95,7 +95,7 @@ First get the network IDs and pool to use for the site:
    +--------------------------------------+-------------------------+--------------------------------------+
 
 In this case we will use ``public00`` as the pool for public IPs and 
-``1aaf20b6-47a1-47ef-972e-7b36872f678f`` as the network id. Check with the provider
+``1aaf20b6-47a1-47ef-972e-7b36872f678f`` as the network ID. Check with the provider
 which is the right network to use. Use these values in the ``terraform.tfvars``
 file:
 
