@@ -197,7 +197,6 @@ following the template provided:
 .. code-block:: shell
 
    $ cp deployments/hub.yaml.template deployments/hub.yaml
-   
 
 Each deployment will need a a domain name pointing to your ingress host, you
 can create one at the `FedCloud dynamic DNS service <https://nsupdate.fedcloud.eu/>`_.
