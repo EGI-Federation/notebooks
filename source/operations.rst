@@ -104,7 +104,6 @@ file:
    ip_pool = "public00"
    net_id  = "1aaf20b6-47a1-47ef-972e-7b36872f678f"
 
-
 You may want to check the right flavors for your VMs and adapt other variables
 in ``terraform.tfvars``. To get a list of flavors you can use:
 
