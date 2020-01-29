@@ -142,7 +142,6 @@ with ansible:
      ansible-playbook --inventory-file=$(which terraform-inventory) \
      playbooks/k8s.yaml
 
-
 Interacting with the cluster
 ::::::::::::::::::::::::::::
 
@@ -198,16 +197,16 @@ following the template provided:
 
    $ cp deployments/hub.yaml.template deployments/hub.yaml
 
-Each deployment will need a a domain name pointing to your ingress host, you
+Each deployment will need a domain name pointing to your ingress host, you
 can create one at the `FedCloud dynamic DNS service <https://nsupdate.fedcloud.eu/>`_.
 
-Then you will need to create a client for EGI Check-in to authorise users
+Then you will need to create an OpenID Connect client for EGI Check-in to authorise users
 into the new deployment. You can create a client by going to the `Check-in demo
 OIDC clients management <https://aai-demo.egi.eu/oidc/manage/admin/clients>`_.
-Use the followin as redirect URL: ``https://<your host domain name>/hub/oauth_callback``.
+Use the following as redirect URL: ``https://<your host domain name>/hub/oauth_callback``.
 
 In the `Access` tab, add ``offline_access`` to the list of scopes. Save the
-client and take note of the client id and client secret for later.
+client and take note of the client ID and client secret for later.
 
 Finally you will also need 3 different random strings generated with
 ``openssl rand -hex 32`` that will be used as secrets in the file describing 
