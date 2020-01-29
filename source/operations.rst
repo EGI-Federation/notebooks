@@ -29,7 +29,6 @@ on your client machine:
 
 * ``terraform-inventory`` to get the list of hosts to use from terraform.
 
-
 Get the configuration repo
 ::::::::::::::::::::::::::
 
