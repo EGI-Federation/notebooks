@@ -82,7 +82,7 @@ obtained is valid for 1 hour, you can refresh it at any time with:
 
    $ eval "$(egicli endpoint token --site CESGA --project-id fcaf23d103c1485694e7494a59ee5f09)"
 
-First get the network ids and pool to use for the site:
+First get the network IDs and pool to use for the site:
 
 .. code-block:: shell
 
