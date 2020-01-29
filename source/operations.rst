@@ -44,7 +44,7 @@ Kubernetes
 
 We use ``terraform`` and ``ansible`` to build the cluster at one of the EGI Cloud
 providers. If you are building the cluster for the first time, create a new
-directory on your local git repository from the templat, add it to the
+directory on your local git repository from the template, add it to the
 repo, and get ``terraform`` ready:
 
 .. code-block:: shell
