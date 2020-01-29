@@ -68,7 +68,7 @@ for a given site:
    eb7ff20e603d471cb731bdb83a95a2b5  fedcloud.egi.eu      True       CESGA
    fcaf23d103c1485694e7494a59ee5f09  vo.notebooks.egi.eu  True       CESGA
 
-And with the project id, you can obtain all the environment variables needed
+And with the project ID, you can obtain all the environment variables needed
 to interact with the OpenStack APIs of the site:
 
 .. code-block:: shell
