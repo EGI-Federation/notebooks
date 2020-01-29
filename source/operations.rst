@@ -40,7 +40,6 @@ keybase, start by cloning the repo:
    
    $ git clone keybase://team/opslife/egi-notebooks
 
-
 Kubernetes
 ==========
 
