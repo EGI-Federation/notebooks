@@ -10,7 +10,7 @@ Initial set-up
 Notebooks VO
 ::::::::::::
 
-The resources used for the Notebooks deployments are managed with the 
+The resources used for the Notebooks deployments are managed with the
 ``vo.notebooks.egi.eu`` VO. Operators of the service should join the VO, check
 the entry at the `operations portal <https://operations-portal.egi.eu/vo/view/voname/vo.notebooks.egi.eu>`_
 and at `AppDB <https://appdb.egi.eu/store/vo/vo.notebooks.egi.eu>`_.
@@ -32,11 +32,12 @@ on your client machine:
 Get the configuration repo
 ::::::::::::::::::::::::::
 
-All the configuration of the notebooks is stored at a git repo available in 
-keybase, start by cloning the repo:
+All the configuration of the notebooks is stored at a git repo available in
+keybase. You'll need to be part of the ``opslife`` team in keybase to access.
+Start by cloning the repo:
 
 .. code-block:: shell
-   
+
    $ git clone keybase://team/opslife/egi-notebooks
 
 Kubernetes
@@ -94,7 +95,7 @@ First get the network IDs and pool to use for the site:
    | 6174db12-932f-4ee3-bb3e-7a0ca070d8f2 | public00                | 6af8c4f3-8e2e-405d-adea-c0b374c5bd99 |
    +--------------------------------------+-------------------------+--------------------------------------+
 
-In this case we will use ``public00`` as the pool for public IPs and 
+In this case we will use ``public00`` as the pool for public IPs and
 ``1aaf20b6-47a1-47ef-972e-7b36872f678f`` as the network ID. Check with the provider
 which is the right network to use. Use these values in the ``terraform.tfvars``
 file:
@@ -136,7 +137,7 @@ Your VMs are up and running, it's time to get kubernetes configured and running
 with ansible:
 
 .. code-block:: shell
-  
+
    $ cd ..   # you should be now in <new provider>
    $ ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=silently TF_STATE=./terraform \
      ansible-playbook --inventory-file=$(which terraform-inventory) \
@@ -146,11 +147,11 @@ Interacting with the cluster
 ::::::::::::::::::::::::::::
 
 As the master will be on a private IP, you won't be able to directly interact
-with it, but you can still ssh into the VM using the ingress node as a bastion
+with it, but you can still ssh into the VM using the ingress node as a gateway
 host (you can get the different hosts with ``TF_STATE=./terraform terraform-inventory --inventory``)
 
 .. code-block:: shell
-   
+
    $ ssh -o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p -q egi@<ingress ip>" \
          -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null egi@<master ip>
    egi@k8s-master:~$ kubectl get nodes
@@ -159,10 +160,10 @@ host (you can get the different hosts with ``TF_STATE=./terraform terraform-inve
    k8s-nfs         Ready    <none>   16m   v1.15.7
    k8s-w-ingress   Ready    <none>   16m   v1.15.7
    egi@k8s-master:~$ helm list
-   NAME           	REVISION	UPDATED                 	STATUS  	CHART                       	APP VERSION	NAMESPACE   
+   NAME           	REVISION	UPDATED                 	STATUS  	CHART                       	APP VERSION	NAMESPACE
    certs-man      	2       	Wed Jan  8 15:56:58 2020	DEPLOYED	cert-manager-v0.11.0        	v0.11.0    	cert-manager
-   cluster-ingress	3       	Wed Jan  8 15:56:53 2020	DEPLOYED	nginx-ingress-1.7.0         	0.24.1     	kube-system 
-   nfs-provisioner	3       	Wed Jan  8 15:56:43 2020	DEPLOYED	nfs-client-provisioner-1.2.8	3.1.0      	kube-system 
+   cluster-ingress	3       	Wed Jan  8 15:56:53 2020	DEPLOYED	nginx-ingress-1.7.0         	0.24.1     	kube-system
+   nfs-provisioner	3       	Wed Jan  8 15:56:43 2020	DEPLOYED	nfs-client-provisioner-1.2.8	3.1.0      	kube-system
 
 
 Modifying/Destroying the cluster
@@ -209,8 +210,8 @@ In the `Access` tab, add ``offline_access`` to the list of scopes. Save the
 client and take note of the client ID and client secret for later.
 
 Finally you will also need 3 different random strings generated with
-``openssl rand -hex 32`` that will be used as secrets in the file describing 
-the deployment. 
+``openssl rand -hex 32`` that will be used as secrets in the file describing
+the deployment.
 
 Go and edit the deployment description file to add this information (search for
 ``# FIXME NEEDS INPUT`` in the file to quickly get there)
@@ -221,7 +222,7 @@ For deploying the notebooks instance we will also use ``ansible``:
 
    $ ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=silently TF_STATE=./terraform ansible-playbook \
           --inventory-file=$(which terraform-inventory) playbooks/notebooks.yaml
-   
+
 The first deployment trial may fail due to a timeout caused by the downloading
 of the container images needed. You can retry after a while to re-deploy.
 
@@ -345,5 +346,5 @@ be upgraded at the cluster.
    grafana
    accounting
    backups
-   capacity management 
+   capacity management
    share the terraform status
