@@ -34,9 +34,10 @@ or any additional service requests.
    data
    integration
    communities
-   technical
-   training
    faq
+   training
+   architecture
+   operations
 
 .. to be added back
    customisation

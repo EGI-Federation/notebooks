@@ -1,5 +1,5 @@
-Service Architecture
---------------------
+Internal Service Architecture
+-----------------------------
 
 The EGI Notebooks service relies on the following technologies to provide its
 functionality:
@@ -18,15 +18,12 @@ functionality:
 
 * `Prometheus <https://prometheus.io/>`_ for monitoring resource consumption.
 
-* Specific EGI hooks for `monitoring <https://github.com/EGI-Foundation/egi-notebooks-monitoring>`_
-  and `accounting <https://github.com/EGI-Foundation/egi-notebooks-accounting>`_.
+* Specific EGI hooks for `monitoring <https://github.com/EGI-Foundation/egi-notebooks-monitoring>`_,
+  `accounting <https://github.com/EGI-Foundation/egi-notebooks-accounting>`_
+  and `backup <https://github.com/EGI-Foundation/egi-notebooks-backup>`_.
 
 * VO-Specific storage/Big data facilities or any pluggable tools into the
   notebooks environment can be added to community specific instances.
-
-.. image:: /_static/egi_notebooks_architecture.png
-
-.. [[File:EGI_Notebooks_Stack.png|center|650px|EGI Notebooks Achitecture]]
 
 Kubernetes
 ::::::::::
@@ -76,6 +73,7 @@ EGI Customisations
 EGI Notebooks is deployed as a set of customisations of the `JupyterHub helm
 charts <https://jupyterhub.github.io/helm-chart/>`_.
 
+.. image:: /_static/egi_notebooks_architecture.png
 
 Authentication
 ==============
