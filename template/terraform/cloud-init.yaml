@@ -1,0 +1,12 @@
+#cloud-config
+
+users:
+- default
+- name: egi 
+  gecos: EGI
+  primary_group: egi 
+  groups: users
+  shell: /bin/bash
+  sudo: ALL=(ALL) NOPASSWD:ALL
+  ssh_authorized_keys:
+  - <add here your ssh key>

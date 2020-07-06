@@ -1,0 +1,3 @@
+---
+ansible_user: egi
+ansible_ssh_common_args: '-o ProxyCommand="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p -q egi@{{ groups["fip"][0] }}" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'

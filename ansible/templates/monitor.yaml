@@ -1,2 +1,0 @@
-service:
-  api_token: "{{ monitor_token }}"
