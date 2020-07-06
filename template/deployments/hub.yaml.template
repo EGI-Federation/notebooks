@@ -1,0 +1,80 @@
+proxy:
+  # FIXME NEEDS INPUT
+  secretToken: "<one secret string generated with: openssl rand -hex 32>"
+  service:
+    type: NodePort
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/tls-acme: "true"
+  hosts:
+  # FIXME NEEDS INPUT
+  - <your host name>
+  tls:
+  - hosts:
+    # FIXME NEEDS INPUT
+    - <your host name>
+    secretName: acme-tls-catchall
+    enabled: true
+
+singleuser:
+  storage:
+    capacity: 10Gi
+    dynamic:
+      pvcNameTemplate: claim-{userid}{servername}
+      volumeNameTemplate: vol-{userid}{servername}
+      storageAccessModes: ["ReadWriteMany"]
+  memory:
+    limit: 1G
+    guarantee: 128M
+  cpu:
+    limit: 1
+    guarantee: .02
+  defaultUrl: "/lab"
+  image:
+    name: eginotebooks/single-user
+    tag: "a9196aa"
+
+hub:
+  services:
+    status:
+       url: "http://status-web/"
+       admin: true
+       # FIXME NEEDS INPUT
+       apiToken: "<one secret string generated with: openssl rand -hex 32>"
+  image:
+    name: eginotebooks/hub
+    tag: "9198d83"
+  extraEnv:
+    JUPYTER_ENABLE_LAB: 1
+    # This needs to be updated as the service is moved to production
+    EGICHECKIN_HOST: aai-demo.egi.eu
+  extraConfig:
+    volume-handling: |-
+      from egispawner.spawner import EGISpawner
+      c.JupyterHub.spawner_class = EGISpawner
+      c.JupyterHub.authenticate_prometheus = False
+
+
+auth:
+  state:
+    enabled: true
+    # FIXME NEEDS INPUT
+    cryptoKey: "<one secret string generated with: openssl rand -hex 32>"
+  type: custom
+  admin:
+    access: true
+    # add here any users who should have admin control
+    users: [] 
+  custom:
+    className: oauthenticator.egicheckin.EGICheckinAuthenticator
+    config:
+      # FIXME NEEDS INPUT
+      client_id: "<check-in client id>"
+      # FIXME NEEDS INPUT
+      client_secret: "<check-in client secret>"
+      # FIXME NEEDS INPUT
+      oauth_callback_url: "https://<your host name>/hub/oauth_callback"
+      scope: ["openid", "profile", "email", "offline_access", "eduperson_scoped_affiliation", "eduperson_entitlement"]
+      username_key: "sub"

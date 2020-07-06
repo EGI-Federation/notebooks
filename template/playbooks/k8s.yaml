@@ -1,0 +1,205 @@
+# NFS package installation
+- hosts: type_openstack_compute_instance_v2
+  vars_files:
+    - ssh_vars.yaml
+  become: true
+  tasks:
+  - name: Add SSH keys
+    authorized_key:
+      user: egi
+      state: present
+      key: "{{ lookup('file', item) }}"
+    with_fileglob:
+    - "public_keys/*"
+  - name: Install nfs-common
+    apt:
+      name: nfs-common
+      state: latest
+      update_cache: yes
+
+- hosts: nfs
+  vars_files:
+    - ssh_vars.yaml
+  become: true
+  tasks:
+  - name: Install nfs-server
+    apt: name="nfs-kernel-server" state=present update_cache=yes
+  - name: Create user for NFS
+    user:
+      name: volumes
+      create_home: false
+      uid: 5005
+  - name: Format fs
+    filesystem:
+      fstype: ext4
+      dev: "{{ nfs_block_device }}"
+  - name: Create /exports dir
+    file:
+      path: /exports
+      state: directory
+      mode: 0755
+      owner: volumes
+  - name: Mount fs
+    mount:
+      path: /exports
+      src: "{{ nfs_block_device }}"
+      state: present
+      fstype: ext4
+  - name: Create exports
+    template:
+      src: templates/exports
+      dest: /etc/exports
+      mode: 0644
+  - name: Start NFS service
+    service: name="nfs-server" state=started
+  - name: Reload exports
+    command: exportfs -ra
+
+# Get k8s deployed
+- hosts: master
+  vars_files:
+    - ssh_vars.yaml
+  become: true
+  roles:
+  - role: 'grycap.kubernetes'
+    vars:
+      kube_version: 1.18.4
+      kube_network: 'flannel'
+      kube_install_helm: true
+      kube_install_metrics: true
+  tasks:
+  - name: create kubectl config dir
+    file:
+      path: "~{{ ansible_user }}/.kube"
+      owner: "{{ ansible_user }}"
+      state: directory
+  - name: copy kubectl config to regular user
+    copy:
+      remote_src: True
+      src: /etc/kubernetes/admin.conf
+      dest: "~{{ ansible_user }}/.kube/config"
+      owner: "{{ ansible_user }}"
+
+- hosts: ingress, worker
+  vars_files:
+    - ssh_vars.yaml
+  become: true
+  roles:
+  - role: 'grycap.kubernetes'
+    vars:
+      kube_server: "{{ hostvars[groups['master'][0]].ansible_default_ipv4.address }}"
+      kube_type_of_node: wn
+      kube_version: 1.18.4
+      kubelet_extra_args: '--volume-stats-agg-period 0'
+
+# k8s customisation
+- hosts: master
+  vars_files:
+    - ssh_vars.yaml
+  become: true
+  tasks:
+  - name: wait for helm
+    command: helm version
+    register: result
+    until: result.rc == 0
+    retries: 20
+    delay: 10
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+  - name: NFS provisioner
+    vars:
+      config: >-
+        --set nfs.server={{ hostvars[groups['nfs'][0]].ansible_default_ipv4.address }}
+        --set storageClass.defaultClass=true
+        --set nfs.path=/exports
+    shell: |-
+      helm status nfs-provisioner
+      if [ $? -ne 0 ]; then
+          helm install --name nfs-provisioner --namespace kube-system {{ config }} stable/nfs-client-provisioner
+      else
+          helm upgrade {{ config }} nfs-provisioner stable/nfs-client-provisioner
+      fi
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+      PATH: /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+  - name: Ingress
+    vars:
+      config: >-
+        --version=1.40.1
+        --set controller.service.type=NodePort
+        --set controller.service.externalIPs={{ '{' + ','.join(groups['ingress']) + '}' }}
+        --set 'controller.config.proxy-body-size="0"'
+        --set controller.config.ssl-protocols='TLSv1 TLSv1.1 TLSv1.2'
+        --set controller.config.ssl-ciphers='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS'
+    shell: |-
+      helm status cluster-ingress
+      if [ $? -ne 0 ]; then
+          helm install --name cluster-ingress --namespace kube-system {{ config }} stable/nginx-ingress
+      else
+          helm upgrade {{ config }} cluster-ingress stable/nginx-ingress
+      fi
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+      PATH: /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+  - name: cert-manager
+    vars:
+      # webhook seems to fail in our clusters
+      config: >-
+        --version=0.12.0
+        --set webhook.enabled=false
+        --set ingressShim.defaultIssuerName=letsencrypt-prod
+        --set ingressShim.defaultIssuerKind=ClusterIssuer
+    shell: |-
+      helm status certs-man
+      if [ $? -ne 0 ]; then
+          kubectl create namespace cert-manager
+          kubectl apply --validate=false -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.12/deploy/manifests/00-crds.yaml
+          kubectl create namespace cert-manager
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo update
+          helm install --name certs-man --namespace cert-manager {{ config }} jetstack/cert-manager
+      else
+          helm upgrade {{ config }} certs-man jetstack/cert-manager
+      fi
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+      PATH: /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+  - name: cluster ingress file
+    copy:
+      dest: /tmp/clusterissuer.yaml
+      content: |
+        apiVersion: cert-manager.io/v1alpha2
+        kind: ClusterIssuer
+        metadata:
+          name: letsencrypt-prod
+        spec:
+          acme:
+            email: enol.fernandez@egi.eu
+            server: https://acme-v02.api.letsencrypt.org/directory
+            privateKeySecretRef:
+              name: cluster-issuer-account-key
+            # Add a single challenge solver, HTTP01 using nginx
+            solvers:
+            - http01:
+                ingress:
+                  class: nginx
+  - name: cluster issuer
+    shell:
+      kubectl apply -f /tmp/clusterissuer.yaml
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+      PATH: /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+  - name: prometheus
+    vars:
+      config: >-
+        --version=11.1.4
+    shell: |-
+      helm status prometheus
+      if [ $? -ne 0 ]; then
+          helm install --name prometheus --namespace prometheus {{ config }} stable/prometheus
+      else
+          helm upgrade {{ config }} prometheus stable/prometheus
+      fi
+    environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+      PATH: /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin

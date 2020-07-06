@@ -1,0 +1,2 @@
+# export the NFS directory to all the cluster members
+/exports {% for host in groups['type_openstack_compute_instance_v2'] -%}{{ hostvars[host]['ansible_default_ipv4']['address']}}(rw,no_root_squash,no_subtree_check) {% endfor -%}
